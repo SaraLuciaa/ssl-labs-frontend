@@ -3,14 +3,14 @@
     <div class="logo-container">
       <img
         @click="reload"
-        src="/public/logo.png"
+        src="/logo.png"
         alt="Vortex Logo"
         class="logo"
       />
       <h1><span>Vor</span>tex</h1>
     </div>
 
-    <Button @click="handleHistory">Historial</Button>
+    <Button @click="handleNavigation">{{ buttonText }}</Button>
   </header>
 </template>
 
@@ -22,12 +22,25 @@ export default {
   components: {
     Button,
   },
+  props: {
+    currentPage: {
+      type: String,
+      default: 'home',
+    },
+  },
+  emits: ['navigate'],
+  computed: {
+    buttonText() {
+      return this.currentPage === 'home' ? 'Historial' : 'Buscar';
+    },
+  },
   methods: {
     reload() {
       location.reload();
     },
-    handleHistory() {
-      console.log("Ver historial");
+    handleNavigation() {
+      const targetPage = this.currentPage === 'home' ? 'history' : 'home';
+      this.$emit('navigate', targetPage);
     },
   },
 };

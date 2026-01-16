@@ -65,4 +65,14 @@ export default {
       poll();
     });
   },
+
+  async getHistory() {
+    const response = await fetch(`${API_URL}/analysis`);
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener historial: ${response.status}`);
+    }
+
+    return await response.json();
+  },
 };

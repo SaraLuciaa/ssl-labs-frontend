@@ -1,10 +1,16 @@
 <template>
   <Layout>
     <template #header>
-      <Header />
+      <Header 
+        :currentPage="currentPage"
+        @navigate="$emit('navigate', $event)"
+      />
     </template>
     <template #body>
-      <Body />
+      <Body 
+        :analysisData="analysisData"
+        @update:analysisData="$emit('update:analysisData', $event)"
+      />
     </template>
   </Layout>
 </template>
@@ -21,5 +27,16 @@ export default {
     Header,
     Body,
   },
+  props: {
+    currentPage: {
+      type: String,
+      default: 'home',
+    },
+    analysisData: {
+      type: Object,
+      default: null,
+    },
+  },
+  emits: ['navigate', 'update:analysisData'],
 };
 </script>

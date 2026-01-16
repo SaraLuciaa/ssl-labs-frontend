@@ -9,7 +9,7 @@
         {{ error }}
       </div>
       
-      <ResultsDisplay v-if="analysisData" :analysis="analysisData" />
+      <ResultsDisplay v-if="currentAnalysisData" :analysis="currentAnalysisData" />
     </div>
   </main>
 </template>
@@ -25,18 +25,29 @@ export default {
     SearchBar,
     ResultsDisplay,
   },
+  props: {
+    analysisData: {
+      type: Object,
+      default: null,
+    },
+  },
+  emits: ['update:analysisData'],
   data() {
     return {
       isLoading: false,
-      analysisData: null,
       error: null,
     };
+  },
+  computed: {
+    currentAnalysisData() {
+      return this.analysisData;
+    },
   },
   methods: {
     async handleSearch(host) {
       this.isLoading = true;
       this.error = null;
-      this.analysisData = null;
+      this.$emit('update:analysisData', null);
       
       try {
         const response = await sslAnalysisService.startAnalysis(host);
@@ -49,11 +60,11 @@ export default {
         const result = await sslAnalysisService.pollAnalysis(
           analysisId,
           (data) => {
-            this.analysisData = data.analysis || data;
+            this.$emit('update:analysisData', data.analysis || data);
           }
         );
         
-        this.analysisData = result.analysis || result;
+        this.$emit('update:analysisData', result.analysis || result);
       } catch (err) {
         this.error = err.message;
         console.error('Error:', err);

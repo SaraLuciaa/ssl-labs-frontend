@@ -8,7 +8,9 @@
         class="search-input"
         @keyup.enter="handleSearch"
       />
-      <Button @click="handleSearch">Analizar</Button>
+        <Button @click="handleSearch" :disabled="loading">
+        {{ loading ? "Analizando..." : "Analizar" }}
+      </Button>
     </div>
   </section>
 </template>
@@ -20,6 +22,12 @@ export default {
   name: "SearchBar",
   components: {
     Button,
+  },
+  props: {
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["search"],
   data() {

@@ -9,21 +9,21 @@
         {{ error }}
       </div>
       
-      <div v-if="analysisData" class="result">
-        <pre>{{ analysisData }}</pre>
-      </div>
+      <ResultsDisplay v-if="analysisData" :analysis="analysisData" />
     </div>
   </main>
 </template>
 
 <script>
 import SearchBar from './SearchBar.vue';
+import ResultsDisplay from './ResultsDisplay.vue';
 import sslAnalysisService from '../services/analysisService.js';
 
 export default {
   name: 'Body',
   components: {
     SearchBar,
+    ResultsDisplay,
   },
   data() {
     return {
@@ -39,16 +39,21 @@ export default {
       this.analysisData = null;
       
       try {
-        const { id } = await sslAnalysisService.startAnalysis(host);
+        const response = await sslAnalysisService.startAnalysis(host);
+        
+        const analysisId = response.id || response.analysis?.id;
+        if (!analysisId) {
+          throw new Error('No se recibió ID del análisis');
+        }
         
         const result = await sslAnalysisService.pollAnalysis(
-          id,
+          analysisId,
           (data) => {
-            this.analysisData = data;
+            this.analysisData = data.analysis || data;
           }
         );
         
-        this.analysisData = result;
+        this.analysisData = result.analysis || result;
       } catch (err) {
         this.error = err.message;
         console.error('Error:', err);
@@ -76,7 +81,7 @@ export default {
 
 @media (min-width: 1024px) {
   .content {
-    max-width: 50%;
+    max-width: 60%;
   }
 }
 
@@ -100,12 +105,5 @@ export default {
   background-color: #fee;
   color: #c33;
   border-radius: 0.8rem;
-}
-
-.result {
-  margin-top: 2rem;
-  text-align: left;
-  max-width: 100%;
-  overflow-x: auto;
 }
 </style>

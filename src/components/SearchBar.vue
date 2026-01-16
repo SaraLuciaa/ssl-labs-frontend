@@ -49,7 +49,7 @@ export default {
 .search-container {
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
+  margin: 2rem 0rem;
   width: 100%;
 }
 

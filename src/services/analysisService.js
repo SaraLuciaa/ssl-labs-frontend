@@ -40,13 +40,23 @@ export default {
             onUpdate(data);
           }
 
-          if (data.analysis.status === "ready") {
-            resolve(data);
-          } else if (data.analysis.status === "error") {
+          const analysisStatus = data.analysis?.status?.toUpperCase();
+          
+          if (analysisStatus === "READY") {
+            const allEndpointsReady = data.analysis.endpoints?.every(
+              endpoint => endpoint.status_message === "Ready" || endpoint.progress === 100
+            );
+            
+            if (allEndpointsReady || data.analysis.endpoints?.length === 0) {
+              resolve(data);
+              return;
+            }
+          } else if (analysisStatus === "ERROR") {
             reject(new Error(data.message || "Análisis falló"));
-          } else {
-            setTimeout(poll, interval);
+            return;
           }
+          
+          setTimeout(poll, interval);
         } catch (error) {
           reject(error);
         }

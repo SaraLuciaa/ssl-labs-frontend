@@ -1,5 +1,31 @@
-# Vue 3 + Vite
+# Vortex - Analizador de Seguridad SSL/TLS
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Vortex analiza la seguridad de sitios web mediante el diagnóstico detallado de configuraciones SSL/TLS. Utiliza la API de SSL Labs para proporcionar información completa sobre certificados, protocolos, vulnerabilidades y políticas de seguridad.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Configuración del Proyecto
+
+### Requisitos previos
+
+- Node.js (versión 16 o superior)
+- npm o yarn
+- Backend de Vortex corriendo (ver repositorio del backend)
+
+## Como correr el proyecto
+
+2. Instala las dependencias:
+```bash
+npm install
+```
+
+3. Configura las variables de entorno:
+Crea un archivo `.env` en la raíz del proyecto:
+```env
+VITE_API_URL=http://localhost:8081
+```
+
+4. Corre la aplicación en modo desarollo
+
+```bash
+npm run dev
+```
+La aplicación estará disponible en `http://localhost:5173`

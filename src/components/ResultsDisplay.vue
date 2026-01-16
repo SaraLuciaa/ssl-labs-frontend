@@ -53,7 +53,7 @@
                         {{ endpoint.progress }}% 
                     </template>
                     <template v-else>
-                        {{ endpoint.status_message }}
+                        {{ getStatusText(endpoint.status_message) }}
                     </template>
                 </div>
             </div>
@@ -64,10 +64,10 @@
                     <h5>Certificado SSL</h5>
                     <div class="cert-validity">
                         <span v-if="isCertValid(endpoint.details.cert)" class="cert-valid">
-                            ✓ Válido - {{ getDaysRemaining(endpoint.details.cert) }} días restantes
+                            ☑ Válido - {{ getDaysRemaining(endpoint.details.cert) }} días restantes
                         </span>
                         <span v-else class="cert-invalid">
-                            ✗ Inválido o expirado
+                            ☒ Inválido o expirado
                         </span>
                     </div>
                 </div>
@@ -128,11 +128,11 @@
                         </div>
                         <div class="hsts-item">
                             <span class="hsts-label">Incluye subdominios:</span>
-                            <span class="hsts-value">{{ endpoint.details.hstsPolicy.includeSubDomains ? '✓ Sí' : '✗ No' }}</span>
+                            <span class="hsts-value">{{ endpoint.details.hstsPolicy.includeSubDomains ? '☑ Sí' : '☒ No' }}</span>
                         </div>
                         <div class="hsts-item">
                             <span class="hsts-label">Precarga:</span>
-                            <span class="hsts-value">{{ endpoint.details.hstsPolicy.preload ? '✓ Sí' : '✗ No' }}</span>
+                            <span class="hsts-value">{{ endpoint.details.hstsPolicy.preload ? '☑ Sí' : '☒ No' }}</span>
                         </div>
                     </div>
                     <div v-if="getPresentPreloads(endpoint.details.hstsPreloads).length > 0" class="preloads-section">
@@ -157,98 +157,104 @@
 
 <script>
 export default {
-  name: "ResultsDisplay",
-  props: {
-    analysis: {
-      type: Object,
-      required: true,
+    name: "ResultsDisplay",
+    props: {
+        analysis: {
+        type: Object,
+        required: true,
+        },
     },
-  },
-  computed: {
-    statusClass() {
-      const status = this.analysis.status;
-      return {
-        'status-dns': status === 'DNS',
-        'status-progress': status === 'IN_PROGRESS',
-        'status-ready': status === 'READY',
-        'status-error': status === 'ERROR',
-      };
+    computed: {
+        statusClass() {
+        const status = this.analysis.status;
+        return {
+            'status-dns': status === 'DNS',
+            'status-progress': status === 'IN_PROGRESS',
+            'status-ready': status === 'READY',
+            'status-error': status === 'ERROR',
+        };
+        },
     },
-  },
-  methods: {
-    getStatusText(status) {
-      const statusMap = {
-        'DNS': 'Resolviendo DNS',
-        'IN_PROGRESS': 'Análisis en Progreso',
-        'READY': 'Completado',
-        'ERROR': 'Error',
-      };
-      return statusMap[status] || status;
+    methods: {
+        getStatusText(status) {
+            status = status.toUpperCase();
+
+            const statusMap = {
+                'DNS': 'Resolviendo DNS',
+                'IN_PROGRESS': 'Análisis en progreso',
+                'IN PROGRESS': 'En progreso',
+                'READY': 'Listo',
+                'ERROR': 'Error',
+                'UNABLE TO CONNECT TO THE SERVER': 'No se pudo conectar al servidor',
+                'PENDING': 'Pendiente',
+                'READY': 'Listo',
+            };
+            return statusMap[status] || status;
+        },
+        
+        getLoadingMessage(status) {
+        const messages = {
+            'DNS': 'Resolviendo dirección DNS...',
+            'IN_PROGRESS': 'Analizando configuración SSL/TLS...',
+        };
+        return messages[status] || 'Procesando...';
+        },
+        
+        formatTime(timestamp) {
+        if (!timestamp) return 'N/A';
+        return new Date(timestamp).toLocaleString();
+        },
+        
+        isCertValid(cert) {
+        if (!cert || !cert.notBefore || !cert.notAfter) return false;
+        const now = Date.now();
+        const notBefore = cert.notBefore;
+        const notAfter = cert.notAfter;
+        return now >= notBefore && now <= notAfter;
+        },
+        
+        getDaysRemaining(cert) {
+        if (!cert || !cert.notAfter) return 0;
+        const now = Date.now();
+        const notAfter = cert.notAfter;
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const daysRemaining = Math.floor((notAfter - now) / msPerDay);
+        return daysRemaining > 0 ? daysRemaining : 0;
+        },
+        
+        getVulnClass(vulnerable) {
+        return {
+            'vuln-safe': !vulnerable,
+            'vuln-vulnerable': vulnerable,
+        };
+        },
+        
+        getVulnStatus(vulnerable) {
+        return vulnerable ? 'Vulnerable' : 'Seguro';
+        },
+        
+        getHstsClass(status) {
+        return {
+            'hsts-present': status === 'present',
+            'hsts-absent': status === 'absent',
+        };
+        },
+        
+        getHstsStatus(status) {
+        const statusMap = {
+            'present': '☑ Presente',
+            'absent': '☒ Ausente',
+        };
+        return statusMap[status] || status;
+        },
+        
+        getPresentPreloads(preloads) {
+        if (!preloads || !Array.isArray(preloads)) return [];
+        return preloads
+            .filter(p => p.status === 'present')
+            .map(p => p.source);
+        },
     },
-    
-    getLoadingMessage(status) {
-      const messages = {
-        'DNS': 'Resolviendo dirección DNS...',
-        'IN_PROGRESS': 'Analizando configuración SSL/TLS...',
-      };
-      return messages[status] || 'Procesando...';
-    },
-    
-    formatTime(timestamp) {
-      if (!timestamp) return 'N/A';
-      return new Date(timestamp).toLocaleString();
-    },
-    
-    isCertValid(cert) {
-      if (!cert || !cert.notBefore || !cert.notAfter) return false;
-      const now = Date.now();
-      const notBefore = cert.notBefore;
-      const notAfter = cert.notAfter;
-      return now >= notBefore && now <= notAfter;
-    },
-    
-    getDaysRemaining(cert) {
-      if (!cert || !cert.notAfter) return 0;
-      const now = Date.now();
-      const notAfter = cert.notAfter;
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const daysRemaining = Math.floor((notAfter - now) / msPerDay);
-      return daysRemaining > 0 ? daysRemaining : 0;
-    },
-    
-    getVulnClass(vulnerable) {
-      return {
-        'vuln-safe': !vulnerable,
-        'vuln-vulnerable': vulnerable,
-      };
-    },
-    
-    getVulnStatus(vulnerable) {
-      return vulnerable ? 'Vulnerable' : 'Seguro';
-    },
-    
-    getHstsClass(status) {
-      return {
-        'hsts-present': status === 'present',
-        'hsts-absent': status === 'absent',
-      };
-    },
-    
-    getHstsStatus(status) {
-      const statusMap = {
-        'present': '✓ Presente',
-        'absent': '✗ Ausente',
-      };
-      return statusMap[status] || status;
-    },
-    
-    getPresentPreloads(preloads) {
-      if (!preloads || !Array.isArray(preloads)) return [];
-      return preloads
-        .filter(p => p.status === 'present')
-        .map(p => p.source);
-    },
-  },
 };
 </script>
 

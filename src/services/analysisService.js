@@ -51,7 +51,7 @@ export default {
               resolve(data);
               return;
             }
-          } else if (analysisStatus === "ERROR") {
+          } else if (analysisStatus === "ERROR" || analysisStatus === "UNABLE TO CONNECT TO THE SERVER") {
             reject(new Error(data.message || "Análisis falló"));
             return;
           }

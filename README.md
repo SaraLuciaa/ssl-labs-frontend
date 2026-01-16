@@ -1,4 +1,4 @@
-# Vortex - Analizador de Seguridad SSL/TLS
+# Vortex
 
 Vortex analiza la seguridad de sitios web mediante el diagnóstico detallado de configuraciones SSL/TLS. Utiliza la API de SSL Labs para proporcionar información completa sobre certificados, protocolos, vulnerabilidades y políticas de seguridad.
 

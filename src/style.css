@@ -1,0 +1,17 @@
+html,
+body,
+.app {
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  background-color: var(--brand-background);
+}
+
+* {
+  --brand-principal: #a223c0;
+  --brand-secundary: #4a2fac;
+  --brand-background: #f0f0f0;
+  --brand-top: #ffffff;
+  --brand-strong: #1e1b4b;
+  --brand-regular: #475569;
+}
